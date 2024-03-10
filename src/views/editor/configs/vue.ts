@@ -55,15 +55,20 @@ export default defineConfig({
     createNewFiles: () => [
         {
             name: 'App.vue',
-            contents: `<script setup>
-console.log('Hello World')
-</script>
-
-<template>
-  <div>
-    <h1>Example Vue!</h1>
-  </div>
+            contents: `<template>
+    <div>
+        <h1>Example Vue!</h1>
+        <button @click="count++">Count is {{count}}</button>
+    </div>
 </template>
+
+<script>
+export default {
+    data: () => ({
+        count: 0
+    })
+}
+</script>
 
 <style scoped>
 h1 {

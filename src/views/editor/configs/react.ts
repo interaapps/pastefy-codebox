@@ -1,4 +1,5 @@
 import {WebContainer, WebContainerProcess} from "@webcontainer/api";
+import {mergePackageJSON} from "./helper.ts";
 
 export default {
     name: 'React',
@@ -55,7 +56,7 @@ export default defineConfig({
 }`)
         }
 
-        await webContainer.fs.writeFile('package.json', JSON.stringify({
+        await webContainer.fs.writeFile('package.json', JSON.stringify(await mergePackageJSON({
             "name": "testvite1",
             "private": true,
             "version": "0.0.0",
@@ -80,7 +81,7 @@ export default defineConfig({
                 "eslint-plugin-react-refresh": "^0.4.5",
                 "vite": "^5.1.4"
             }
-        }))
+        }, webContainer)))
 
         await input.write('npm install && npm run dev\n')
     },
@@ -90,21 +91,21 @@ export default defineConfig({
             contents: `import { useState } from 'react'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <h1>React!</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>App.jsx</code> and save to test HMR
-        </p>
-      </div>
-    </>
-  )
+    const [count, setCount] = useState(0)
+    
+    return (
+        <>
+            <h1>React!</h1>
+            <div className="card">
+                <button onClick={() => setCount((count) => count + 1)}>
+                    count is {count}
+                </button>
+                <p>
+                    Edit <code>App.jsx</code> and save to test HMR
+                </p>
+            </div>
+        </>
+    )
 }
 
 export default App`
@@ -117,9 +118,9 @@ import App from './App.jsx'
 import './styles.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>,
 )`
         },
         {

@@ -1,4 +1,5 @@
 import {WebContainer, WebContainerProcess} from "@webcontainer/api";
+import {mergePackageJSON} from "./helper.ts";
 
 export default {
     name: 'Typescript-Web',
@@ -22,7 +23,7 @@ export default {
         `)
         }
 
-        await webContainer.fs.writeFile('package.json', JSON.stringify({
+        await webContainer.fs.writeFile('package.json', JSON.stringify(await mergePackageJSON({
             "name": "testvite1",
             "private": true,
             "version": "0.0.0",
@@ -35,7 +36,7 @@ export default {
             "devDependencies": {
                 "vite": "^5.1.4"
             }
-        }))
+        }, webContainer)))
 
         await input.write('npm install && npm run dev\n')
     },

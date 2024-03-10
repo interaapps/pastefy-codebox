@@ -1,3 +1,5 @@
+import {htmlBody} from "./helper.ts";
+
 export default {
     name: 'HTML-CSS-JS',
     icon: 'brand-html5',
@@ -5,31 +7,25 @@ export default {
     createNewFiles: () => [
         {
             name: 'index.html',
-            contents: `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-             <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-                         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-             <title>Document</title>
-</head>
-<body>
-    <h1>Hi</h1>
+            contents: htmlBody(`<h1>My Site!</h1>
+    <button id="button">Count is 0</button>
     
-     <script src="/index.js"></script>
-</body>
-</html>`
+    <script src="/index.js"></script>`, `<link rel="stylesheet" href="/styles.css">`)
         },
         {
             name: 'index.js',
-            contents: `document.querySelector('h1').textContent = 'Hello World!'`
+            contents: `const button = document.querySelector('#button')
+            
+let count = 0
+button.addEventListener('click', () => {
+    button.textContent = \`Count is \${++count}\`
+})
+`
         },
         {
             name: 'styles.css',
             contents: `* {
     font-family: sans-serif;
-    margin: 0;
-    padding: 0;
 }`
         },
         {

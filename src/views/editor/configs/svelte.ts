@@ -1,5 +1,5 @@
 import {WebContainer, WebContainerProcess} from "@webcontainer/api";
-import {htmlBody} from "./helper.ts";
+import {htmlBody, mergePackageJSON} from "./helper.ts";
 
 export default {
     name: 'Svelte',
@@ -29,7 +29,7 @@ export default {
 }`)
         }
 
-        await webContainer.fs.writeFile('package.json', JSON.stringify({
+        await webContainer.fs.writeFile('package.json', JSON.stringify(await mergePackageJSON({
             "name": "testvite1",
             "private": true,
             "version": "0.0.0",
@@ -44,7 +44,7 @@ export default {
                 "svelte": "^4.2.11",
                 "vite": "^5.1.4"
             }
-        }))
+        }, webContainer)))
 
         await input.write('npm install && npm run dev\n')
     },
@@ -59,13 +59,13 @@ const increment = () => {
 </script>
 
 <main>
-  <h1>Svelte</h1>
-
-  <div class="card">
-      <button on:click={increment}>
-        count is {count}
-      </button>
-  </div>
+    <h1>Svelte</h1>
+    
+    <div class="card">
+        <button on:click={increment}>
+            count is {count}
+        </button>
+    </div>
 </main>
 
 <style>
@@ -79,7 +79,7 @@ const increment = () => {
             contents: `import App from './App.svelte'
 
 const app = new App({
-  target: document.getElementById('app'),
+    target: document.getElementById('app'),
 })
 
 export default app`

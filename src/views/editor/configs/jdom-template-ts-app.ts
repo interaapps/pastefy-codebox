@@ -1,5 +1,5 @@
 import {WebContainer, WebContainerProcess} from "@webcontainer/api";
-import {createTSConfig, htmlBody} from "./helper.ts";
+import {createTSConfig, htmlBody, mergePackageJSON} from "./helper.ts";
 
 export default {
     name: 'JDOM-Template TS',
@@ -14,7 +14,7 @@ export default {
             await webContainer.fs.writeFile('tsconfig.json', createTSConfig())
         }
 
-        await webContainer.fs.writeFile('package.json', JSON.stringify({
+        await webContainer.fs.writeFile('package.json', JSON.stringify(await mergePackageJSON({
             "name": "testvite1",
             "private": true,
             "version": "0.0.0",
@@ -31,7 +31,7 @@ export default {
                 "typescript": "^5.2.2",
                 "vite": "^5.1.4"
             }
-        }))
+        }, webContainer)))
 
         await input.write('npm install && npm run dev\n')
     },

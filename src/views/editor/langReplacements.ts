@@ -21,4 +21,5 @@ export default {
     txt: "text",
     h: "c",
     ino: "c",
+    codebox: "json",
 }

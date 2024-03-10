@@ -32,6 +32,18 @@ export default defineConfig({
   plugins: [react()],
 })`)
         }
+        if (!files.find(f => f.name === 'main.jsx')) {
+            await webContainer.fs.writeFile('main.jsx', `import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from ${config.component || './App.jsx'}
+${files.find(f => f.name === 'styles.css') ? "import './styles.css'" : ''}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)`)
+        }
         if (!files.find(f => f.name === '.eslint.cjs')) {
             await webContainer.fs.writeFile('.eslint.cjs', `module.exports = {
   root: true,

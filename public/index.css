@@ -42,6 +42,7 @@ app-root {
     border-radius: 8px;
     margin-left: 6px;
     cursor: pointer;
+    font-size: 13px;
 
     &.primary {
         background: #3469ff;

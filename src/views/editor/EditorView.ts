@@ -12,6 +12,7 @@ import Logo from "../../components/Logo.ts";
 import UserProfile from "../../components/UserProfile.ts";
 import TopBar from "../../components/TopBar.ts";
 import {scss} from "../../scss.ts";
+import LoadingIndicator from "../../components/LoadingIndicator.ts";
 
 
 @CustomElement("editor-view")
@@ -26,6 +27,9 @@ export default class EditorView extends JDOMComponent.unshadowed {
     selectedTabIndex = state(0)
     previewShown = state(false)
     fullscreen = state(false)
+    loading = state(false)
+    previewLoading = state(false)
+    savedIndicator = state(false)
 
     terminal: Terminal = new Terminal({
         convertEol: true,
@@ -37,7 +41,6 @@ export default class EditorView extends JDOMComponent.unshadowed {
     })
 
     async getPaste(id: string) {
-        console.log('Getting', id)
         if (id === 'new') {
             this.pasteNameEdit.value = 'New Paste'
 
@@ -58,6 +61,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
 
             return {}
         }
+        this.loading.value = true
+
         const paste = await api.get(`/paste/${id}`)
 
         const out = {...paste}
@@ -93,6 +98,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
 
         this.paste.value = out
         this.pasteNameEdit.value = out.title
+        this.loading.value = false
     }
 
     getFile(name) {
@@ -127,6 +133,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
             this.paste.value = paste
             window.history.pushState(`/${paste.id}`, `/${paste.id}`, `/${paste.id}`)
         }
+        this.savedIndicator.value = true
+        setTimeout(() => this.savedIndicator.value = false, 3000)
     }
 
     async initWebContainer() {
@@ -143,10 +151,12 @@ export default class EditorView extends JDOMComponent.unshadowed {
         }
 
         this.webContainer.on('server-ready', (port, url) => {
+            this.previewLoading.value = true
             this.previewShown.value = true
             console.log('server ready', url, port)
             this.frame.src = url
             this.frameURL.value = url
+            this.previewLoading.value = false
         });
 
 
@@ -202,11 +212,12 @@ export default class EditorView extends JDOMComponent.unshadowed {
     }
 
     fork() {
-        this.paste.value = null
+        this.paste.value = {exists: false}
         window.history.pushState('/new', '/new', '/new')
     }
 
     render() {
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#1c202a')
         this.frame = document.createElement('iframe')
         const termDiv = document.createElement('div')
         termDiv.classList.add('terminal')
@@ -217,7 +228,9 @@ export default class EditorView extends JDOMComponent.unshadowed {
         })
 
         this.getPaste(router.currentRoute.value.params.paste)
-            .then(() => this.initWebContainer())
+            .then(() => {
+                this.initWebContainer()
+            })
 
         return html`
             <div class="editor">
@@ -230,9 +243,11 @@ export default class EditorView extends JDOMComponent.unshadowed {
                     <div class="top-bar-buttons">
                         <button class="btn" @click=${() => this.fork()}>Fork</button>
                         <!-- <button @click=${() => open(`https://pastefy.app/${this.paste.value.id}`)}>Open in Pastefy</button>-->
-                        ${computed(() => user.value?.id === this.paste.value.user_id || !this.paste.value.exists
+                        ${computed(() => user.value?.id === this.paste.value?.user_id || !this.paste.value.exists
                             ? html`
-                                <button class="btn primary" @click=${() => this.savePaste()}>Save</button>`
+                                <button class="btn primary" @click=${() => this.savePaste()}>
+                                    ${computed(() => this.savedIndicator.value ? 'Saved' : 'Save', [this.savedIndicator])}
+                                </button>`
                             : null,
                         [this.paste, user])}
                         
@@ -242,6 +257,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
                 </div>
                 <div class="editor-vertical" style=${{'grid-template-columns': computed(() => this.previewShown.value ? 'auto 25%' : 'auto', [this.previewShown])}}>
                     <div class="editor-code-editor-area">
+                        <${LoadingIndicator} :if=${this.loading} />
+                        
                         <button class="run-btn" @click=${() => this.initWebContainer()}>
                             <i class="ti ti-player-play" />
                         </button>
@@ -259,18 +276,32 @@ export default class EditorView extends JDOMComponent.unshadowed {
                                                 'ti',
                                                 'file-icon',
                                                 computed(() => {
-                                                    if (this.files.value[index].name.endsWith('.js'))
+                                                    if (this.files.value[index].name === '.codebox')
+                                                        return 'ti-file-settings'
+                                                    else if (this.files.value[index].name === 'tsconfig.json')
+                                                        return 'ti-brand-typescript'
+                                                    else if (this.files.value[index].name === 'package.json')
+                                                        return 'ti-script'
+                                                    else if (this.files.value[index].name.endsWith('.js') || this.files.value[index].name.endsWith('.mjs'))
                                                         return 'ti-brand-javascript'
                                                     else if (this.files.value[index].name.endsWith('.ts'))
                                                         return 'ti-brand-typescript'
+                                                    else if (this.files.value[index].name.endsWith('.jsx') || this.files.value[index].name.endsWith('.tsx'))
+                                                        return 'ti-brand-react'
+                                                    else if (this.files.value[index].name.endsWith('.vue'))
+                                                        return 'ti-brand-vue'
+                                                    else if (this.files.value[index].name.endsWith('.svelte'))
+                                                        return 'ti-brand-svelte'
                                                     else if (this.files.value[index].name.endsWith('.css') || this.files.value[index].name.endsWith('.scss'))
                                                         return 'ti-file-type-css'
                                                     else if (this.files.value[index].name.endsWith('.html'))
                                                         return 'ti-brand-html5'
+                                                    else if (this.files.value[index].name.endsWith('.csv'))
+                                                        return 'ti-file-type-csv'
+                                                    else if (this.files.value[index].name.endsWith('.svg'))
+                                                        return 'ti-file-vector'
                                                     else if (this.files.value[index].name.endsWith('.json'))
                                                         return 'ti-json'
-                                                    else if (this.files.value[index].name === '.codebox')
-                                                        return 'ti-file-settings'
                                                     return 'ti-file'
                                                 }, [this.files])
                                             ]} 
@@ -305,6 +336,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
                         />
                     </div>
                     <div class=${{'editor-preview': true, fullscreen: this.fullscreen}} :if=${this.previewShown}>
+                        <${LoadingIndicator} name="Preview" :if=${this.previewLoading} />
                         <div class="editor-preview-toolbar">
                             <i 
                                     class="ti ti-reload icon-button"
@@ -325,7 +357,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
                                     @click=${() => this.fullscreen.value = !this.fullscreen.value}
                             />
                         </div>
-                        ${this.frame}
+                        <${this.frame} />
                     </div>
                 </div>
                 <div class="editor-terminal-area">
@@ -338,182 +370,188 @@ export default class EditorView extends JDOMComponent.unshadowed {
     styles(): string {
         // language=SCSS
         return scss`
-            .editor {
-                display: grid;
-                grid-template-rows: 44px auto 25%;
+          .editor {
+            display: grid;
+            grid-template-rows: 44px auto 25%;
+            height: 100%;
+            background: #00000022;
+            
+            .top-bar {
+              input {
+                font-family: "Plus Jakarta Sans";
+                font-size: 15px;
                 height: 100%;
-                background: #00000022;
-
-                .top-bar {
-                    input {
-                        font-family: "Plus Jakarta Sans";
-                        font-size: 15px;
-                        height: 100%;
-                        background: transparent;
-                        color: #FFFFFF;
-                        padding: 10px;
-                        border: none;
-                        text-align: center;
-                        width: 100%;
-                    }
-                }
-                
-                .editor-terminal-area {
-                    padding: 10px;
-                    width: 100%;
-                    overflow: hidden;
-
-                    .terminal {
-                        border-radius: 10px;
-                        overflow: hidden;
-                        height: 100%;
-                        overflow: hidden;
-                    }
-                }
-
-                .editor-vertical {
-                    display: grid;
-                    grid-template-columns: auto 25%;
-                    grid-gap: 10px;
-                    padding: 0 10px 10px;
-
-                    .editor-code-editor-area {
-                        color: #FFF;
-                        height: 100%;
-                        border-radius: 10px;
-                        overflow: hidden;
-                        position: relative;
-
-                        .editor-code-files {
-                            border-bottom: 2px solid #FFFFFF22;
-                            background: #00000022;
-                            overflow-y: auto;
-                            position: relative;
-                            white-space: pre;
-
-                            ::-webkit-scrollbar {
-                                height: 0;
-                            }
-
-                            button {
-                                color: #FFF;
-                                border: none;
-                                background: transparent;
-                                vertical-align: middle;
-                            }
-                            
-                            .files-tab {
-                                padding: 10px;
-                                cursor: pointer;
-
-                                .file-icon {
-                                    font-size: 18px;
-                                    margin-right: 8px;
-                                }
-                                
-                                input {
-                                    background: transparent;
-                                    border: none;
-                                    width: 130px;
-                                    color: #FFF;
-                                }
-                                
-                                i {
-                                    vertical-align: middle;
-                                    font-size: 16px;
-                                }
-                                
-                                &.selected {
-                                    background: #FFFFFF44;
-                                }
-                            }
-                            
-                            .add-btn {
-                                border: none;
-                                cursor: pointer;
-                                border-radius: 6px;
-                                height: 28px;
-                                color: #FFFFFFAA;
-                                padding: 0;
-                                width: 28px;
-                                font-size: 17px;
-                                margin-left: 5px;
-                                margin-right: 100px;
-                                &:hover {
-                                    color: #FFFFFF;
-                                    background: #FFFFFF11;
-                                }
-                            }
-                        }
-
-                        .run-btn {
-                            color: #FFF;
-                            border: none;
-                            z-index: 1;
-                            cursor: pointer;
-                            position: absolute;
-                            right: 5px;
-                            top: 5px;
-                            background: #5cba37;
-                            border-radius: 6px;
-                            height: 28px;
-                            padding: 0;
-                            width: 28px;
-                            font-size: 17px;
-                        }
-
-                        editor-editor-part {
-                            height: 100%;
-                            overflow: hidden;
-                        }
-                    }
-
-                    .editor-preview {
-                        background: #FFFFFF;
-                        border-radius: 10px;
-                        overflow: hidden;
-                        
-                        display: grid;
-                        grid-template-rows: 40px auto;
-                        
-                        .editor-preview-toolbar {
-                            height: 40px;
-                            background: #181a24;
-                            display: grid;
-                            border-bottom: 2px solid #FFFFFF44;
-                            grid-template-columns: fit-content(10px) auto fit-content(10px);
-                            align-items: center;
-                            grid-gap: 10px;
-                            padding: 0 5px;
-                            .icon-button {
-                                vertical-align: middle;
-                                font-size: 19px;
-                                width: 100%;
-                            }
-                            input {
-                                background: #212531;
-                                padding: 4px;
-                                font-size: 14px;
-                                border-radius: 4px;
-                                border: none;
-                                color: #FFFFFF;;
-                            }
-                        }
-                        iframe {
-                            width: 100%;
-                            height: 100%;
-                            border: none;
-                        }
-                        
-                        &.fullscreen {
-                            position: fixed;
-                            width: calc(100% - 20px);
-                            height: calc(100% - 55px);
-                            z-index: 10;
-                        }
-                    }
-                }
+                background: transparent;
+                color: #FFFFFF;
+                padding: 10px;
+                border: none;
+                text-align: center;
+                width: 100%;
+              }
             }
+
+            .editor-terminal-area {
+              padding: 10px;
+              width: 100%;
+              overflow: hidden;
+
+              .terminal {
+                border-radius: 10px;
+                overflow: hidden;
+                height: 100%;
+                overflow: hidden;
+              }
+            }
+
+            .editor-vertical {
+              display: grid;
+              grid-template-columns: auto 25%;
+              grid-gap: 10px;
+              padding: 0 10px 10px;
+
+              .editor-code-editor-area {
+                color: #FFF;
+                height: 100%;
+                border-radius: 10px;
+                overflow: hidden;
+                position: relative;
+
+                .editor-code-files {
+                  border-bottom: 2px solid #FFFFFF22;
+                  background: #00000022;
+                  overflow-y: auto;
+                  position: relative;
+                  white-space: pre;
+
+                  ::-webkit-scrollbar {
+                    height: 0;
+                  }
+
+                  button {
+                    color: #FFF;
+                    border: none;
+                    background: transparent;
+                    vertical-align: middle;
+                  }
+
+                  .files-tab {
+                    padding: 10px;
+                    cursor: pointer;
+
+                    .file-icon {
+                      font-size: 18px;
+                      margin-right: 8px;
+                    }
+
+                    input {
+                      background: transparent;
+                      border: none;
+                      width: 130px;
+                      font-size: 13px;
+                      color: #FFF;
+                    }
+
+                    i {
+                      vertical-align: middle;
+                      font-size: 16px;
+                    }
+
+                    &.selected {
+                      background: #FFFFFF44;
+                    }
+                  }
+
+                  .add-btn {
+                    border: none;
+                    cursor: pointer;
+                    border-radius: 6px;
+                    height: 28px;
+                    color: #FFFFFFAA;
+                    padding: 0;
+                    width: 28px;
+                    font-size: 17px;
+                    margin-left: 5px;
+                    margin-right: 100px;
+
+                    &:hover {
+                      color: #FFFFFF;
+                      background: #FFFFFF11;
+                    }
+                  }
+                }
+
+                .run-btn {
+                  color: #FFF;
+                  border: none;
+                  z-index: 1;
+                  cursor: pointer;
+                  position: absolute;
+                  right: 5px;
+                  top: 5px;
+                  background: #5cba37;
+                  border-radius: 6px;
+                  height: 28px;
+                  padding: 0;
+                  width: 28px;
+                  font-size: 17px;
+                }
+
+                editor-editor-part {
+                  height: 100%;
+                  overflow: hidden;
+                }
+              }
+
+              .editor-preview {
+                background: #FFFFFF;
+                border-radius: 10px;
+                overflow: hidden;
+                position: relative;
+
+                display: grid;
+                grid-template-rows: 40px auto;
+
+                .editor-preview-toolbar {
+                  height: 40px;
+                  background: #181a24;
+                  display: grid;
+                  border-bottom: 2px solid #FFFFFF44;
+                  grid-template-columns: fit-content(10px) auto fit-content(10px);
+                  align-items: center;
+                  grid-gap: 10px;
+                  padding: 0 5px;
+
+                  .icon-button {
+                    vertical-align: middle;
+                    font-size: 19px;
+                    width: 100%;
+                  }
+
+                  input {
+                    background: #212531;
+                    padding: 4px;
+                    font-size: 14px;
+                    border-radius: 4px;
+                    border: none;
+                    color: #FFFFFF;;
+                  }
+                }
+
+                iframe {
+                  width: 100%;
+                  height: 100%;
+                  border: none;
+                }
+
+                &.fullscreen {
+                  position: fixed;
+                  width: calc(100% - 20px);
+                  height: calc(100% - 55px);
+                  z-index: 10;
+                }
+              }
+            }
+          }
         `;
     }
 }

@@ -2,6 +2,7 @@ import { css, html, JDOMComponent } from 'jdomjs'
 
 import { CustomElement } from 'jdomjs/src/decorators.ts'
 import { router } from "../main.ts";
+import {scss} from "../scss.ts";
 
 
 @CustomElement("pastefy-code-box-logo")
@@ -18,7 +19,7 @@ export default class Logo extends JDOMComponent.unshadowed {
     styles(): string {
 
         /*@language css*/
-        return css`
+        return scss`
             .pastefy-box-logo {
                 height: 100%;
                 width: fit-content;

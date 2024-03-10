@@ -35,6 +35,8 @@ export default class HomeView extends JDOMComponent.unshadowed {
     }
 
     render() {
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#212531')
+
         if (user.value) {
             this.loadUserPastes()
         }
@@ -54,18 +56,19 @@ export default class HomeView extends JDOMComponent.unshadowed {
         return html`
             <${TopBar} />
             <div class="home-page">
-                <h2>Latest Projects</h2>
+                <h2 :if=${computed(() => this.latestPastes.value.length, [this.latestPastes])}>Latest Projects</h2>
                 <div class="projects">
-                <${ForEach}
-                    value=${this.latestPastes}
-                    content=${(paste) => html`
-                        <a class="project" @click=${() => router.go(`/${paste.id}`)}>
-                            <i class=${`ti ti-${paste.config?.icon || 'box'}`} />
-                            <span>${paste.title}</span>
-                        </a>
-                    `}
-                />
-                    
+                    <${ForEach}
+                        value=${this.latestPastes}
+                        content=${(paste) => html`
+                            <a class="project" @click=${() => router.go(`/${paste.id}`)}>
+                                <i class=${`ti ti-${paste.config?.icon || 'box'}`} />
+                                <span>${paste.title}</span>
+                            </a>
+                        `}
+                    />
+                </div>
+                        
                 <h2>New Project</h2>
                 <div class="projects">
                 <${ForEach}
@@ -83,15 +86,15 @@ export default class HomeView extends JDOMComponent.unshadowed {
 
                 <h2 :if=${computed(() => publicPastes.value.length, [publicPastes])}>Latest Public Projects</h2>
                 <div class="projects">
-                <${ForEach}
-                        value=${publicPastes}
-                        content=${(paste) => html`
-                        <a class="project" @click=${() => router.go(`/${paste.id}`)}>
-                            <i class=${`ti ti-${paste.config?.icon || 'box'}`} />
-                            <span>${paste.title}</span>
-                        </a>
-                    `}
-                />
+                    <${ForEach}
+                            value=${publicPastes}
+                            content=${(paste) => html`
+                            <a class="project" @click=${() => router.go(`/${paste.id}`)}>
+                                <i class=${`ti ti-${paste.config?.icon || 'box'}`} />
+                                <span>${paste.title}</span>
+                            </a>
+                        `}
+                    />
                 </div>
         `
     }

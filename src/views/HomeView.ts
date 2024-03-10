@@ -36,6 +36,7 @@ export default class HomeView extends JDOMComponent.unshadowed {
 
     render() {
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#212531')
+        document.title = 'Home - Pastefy Codebox'
 
         if (user.value) {
             this.loadUserPastes()
@@ -119,6 +120,8 @@ export default class HomeView extends JDOMComponent.unshadowed {
                 padding: 14px;
                 cursor: pointer;
                 width: 200px;
+                background: #262B39;
+                transition: 0.2s;
 
                 margin-right: 10px;
                 margin-bottom: 10px;

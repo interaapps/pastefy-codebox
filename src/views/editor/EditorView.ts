@@ -1,6 +1,6 @@
 import {computed, css, html, JDOMComponent, state} from 'jdomjs'
 
-import {Attribute, CustomElement, State} from 'jdomjs/src/decorators.ts'
+import {Attribute, Computed, CustomElement, State, Watch} from 'jdomjs/src/decorators.ts'
 import { Awaiting, ForEach } from 'jdomjs/src/template/helper/components.js'
 import {api, router} from "../../main.ts";
 import { WebContainer } from '@webcontainer/api';
@@ -101,6 +101,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
         this.paste.value = out
         this.pasteNameEdit.value = out.title
         this.loading.value = false
+        document.title = `${out.title || 'Editor'} - Pastefy Codebox`
     }
 
     getFile(name) {
@@ -137,6 +138,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
         }
         this.savedIndicator.value = true
         setTimeout(() => this.savedIndicator.value = false, 3000)
+        document.title = `${this.paste.value?.title || 'Editor'} - Pastefy Codebox`
     }
 
     async initWebContainer() {
@@ -231,6 +233,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
 
     render() {
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#1c202a')
+        document.title = 'Editor - Pastefy Codebox'
+
         this.frame = document.createElement('iframe')
         const termDiv = document.createElement('div')
         termDiv.classList.add('terminal')

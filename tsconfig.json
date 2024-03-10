@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "target": "ES5",
+    "lib": [ "es2017", "dom" ]
+  }
+}

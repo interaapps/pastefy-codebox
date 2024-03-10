@@ -1,0 +1,22 @@
+{
+  "name": "pastefy-codebox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/es6-promise": "^3.3.0",
+    "@webcontainer/api": "^1.1.9",
+    "@xterm/xterm": "^5.4.0",
+    "cajaxjs": "3.0.7",
+    "highlight.js": "^11.9.0",
+    "hono": "^4.0.10",
+    "jdomjs": "3.1.11",
+    "petrel": "^1.0.7",
+    "sass": "^1.71.1"
+  }
+}

@@ -1,0 +1,18 @@
+Logging in...
+
+<script>
+    const queryParams = window.location.hash.substring(1).split("&").map(param => param.split("=")).reduce((acc, [key, value]) => (acc[key] = decodeURIComponent(value), acc), {});
+    console.log(queryParams.access_token)
+    console.log(queryParams.state)
+
+    ;(async () => {
+        const { res } = await fetch('https://accounts.interaapps.de/api/v2/oauth2/external/pastefy', {
+            headers: {
+                Authorization: `Bearer ${queryParams.access_token}`
+            }
+        }).then(r => r.json())
+
+        localStorage['box_session'] = res
+        window.location = queryParams.state
+    })()
+</script>

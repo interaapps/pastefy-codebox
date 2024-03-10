@@ -29,6 +29,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
     fullscreen = state(false)
     loading = state(false)
     previewLoading = state(false)
+    terminalLoading = state(false)
+    containerError = state(false)
     savedIndicator = state(false)
 
     terminal: Terminal = new Terminal({
@@ -138,12 +140,14 @@ export default class EditorView extends JDOMComponent.unshadowed {
     }
 
     async initWebContainer() {
+        this.terminalLoading.value = true
         this.webContainer?.teardown()
 
         console.log('STARTING WEBCONTAINER')
         this.webContainer = await WebContainer.boot();
+        this.containerError.value = false
         this.webContainer.on('error', e => {
-            alert('Web-Containers do not work here. See a tutorial on how to enable them them https://webcontainers.io/guides/browser-config')
+            this.containerError.value = true
         })
 
         for (const {name, contents} of this.files.value) {
@@ -180,6 +184,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
                 configs[config.type]?.initContainer(config, this.files.value, sh, this.webContainer, input)
             }
         })().then(r => null);
+        this.terminalLoading.value = false
     }
 
     selectFile(index: number) {
@@ -216,6 +221,14 @@ export default class EditorView extends JDOMComponent.unshadowed {
         window.history.pushState('/new', '/new', '/new')
     }
 
+    keyDownSaveEvent(e: KeyboardEvent) {
+        if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+            this.savePaste()
+            e.stopPropagation()
+            e.preventDefault()
+        }
+    }
+
     render() {
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#1c202a')
         this.frame = document.createElement('iframe')
@@ -238,8 +251,13 @@ export default class EditorView extends JDOMComponent.unshadowed {
                     <${Logo} />
                     
                     <div>
-                        <input type="text" :bind=${this.pasteNameEdit}>
+                        <input 
+                            type="text" 
+                            :bind=${this.pasteNameEdit} 
+                            @keydown=${e => this.keyDownSaveEvent(e)}
+                        >
                     </div>
+                    
                     <div class="top-bar-buttons">
                         <button class="btn" @click=${() => this.fork()}>Fork</button>
                         <!-- <button @click=${() => open(`https://pastefy.app/${this.paste.value.id}`)}>Open in Pastefy</button>-->
@@ -309,6 +327,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
                                         <input
                                             value=${name}
                                             @click=${e => e.target.focus()}
+                                            @keydown=${e => this.keyDownSaveEvent(e)}
                                             @change=${e => {
                                                 this.webContainer?.fs?.rm(name)
                                                 this.files.value[index].name = e.target.value
@@ -361,6 +380,10 @@ export default class EditorView extends JDOMComponent.unshadowed {
                     </div>
                 </div>
                 <div class="editor-terminal-area">
+                    <${LoadingIndicator} name="Container" :if=${this.terminalLoading} />
+                    <div :if=${this.containerError}>
+                        Web-Containers do not work here. See a tutorial on how to enable them <a href="https://webcontainers.io/guides/browser-config">https://webcontainers.io/guides/browser-config</a>
+                    </div>
                     ${termDiv}
                 </div>
             </div>
@@ -394,6 +417,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
               padding: 10px;
               width: 100%;
               overflow: hidden;
+              position: relative;
 
               .terminal {
                 border-radius: 10px;

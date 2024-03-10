@@ -1,11 +1,15 @@
 // @ts-ignore
 import fs from 'fs'
+import { compile } from 'sass'
 
 // @ts-ignore
 const result = await Bun.build({
     entrypoints: ["./src/main.ts"],
     outdir: "./dist",
 });
+
+// @ts-ignore
+Bun.write('dist/index.css', compile('src/assets/main.scss').css)
 
 fs.cpSync('./public', './dist', {recursive: true});
 

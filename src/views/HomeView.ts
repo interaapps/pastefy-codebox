@@ -102,43 +102,48 @@ export default class HomeView extends JDOMComponent.unshadowed {
     styles(): string {
         // language=SCSS
         return scss`
-            .home-page {
-                padding: 7px 10px;
-                h2 {
-                    margin-bottom: 10px;
-                    margin-top: 30px;
-                }
-                .projects {
-                    .project {
-                        border: 2px solid #FFFFFF33;
-                        border-radius: 8px;
-                        display: inline-block;
-                        text-align: center;
-                        padding: 14px;
-                        cursor: pointer;
-                        width: 200px;
+          .home-page {
+            padding: 7px 10px;
 
-                        margin-right: 10px;
-                        margin-bottom: 10px;
-
-                        i {
-                            font-size: 44px;
-                            display: block;
-                        }
-
-                        span {
-                            display: block;
-                            margin-top: 10px;
-                            font-size: 18px;
-                            font-family: "Plus Jakarta Sans";
-                        }
-
-                        &:hover {
-                            background: #FFFFFF11;
-                        }
-                    }
-                }
+            h2 {
+              margin-bottom: 10px;
+              margin-top: 30px;
             }
+
+            .projects {
+              .project {
+                border: 2px solid #FFFFFF33;
+                border-radius: 8px;
+                display: inline-block;
+                text-align: center;
+                padding: 14px;
+                cursor: pointer;
+                width: 200px;
+
+                margin-right: 10px;
+                margin-bottom: 10px;
+
+                i {
+                  font-size: 44px;
+                  display: block;
+                }
+
+                span {
+                  font-family: "Plus Jakarta Sans";
+                  display: block;
+                  margin-top: 10px;
+                  font-size: 18px;
+                  white-space: pre;
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                }
+
+                &:hover {
+                  background: #FFFFFF11;
+                }
+              }
+            }
+          }
         `;
     }
 }

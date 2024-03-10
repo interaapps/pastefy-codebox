@@ -18,15 +18,17 @@ export async function initUser() {
 }
 
 export async function login(){
-    const url = new URL(window.location.toString())
-    url.pathname = '/logged_in.html'
-
-    new IAOauth('yio57t9r9tsgmmf')
+    const re = new IAOauth('yio57t9r9tsgmmf')
         .addScope("user:read")
         .addScope("pastefy|pastes")
         .addScope("pastefy|folders")
         .addScope("pastefy|notifications")
         .setState(window.location.toString())
-        .setRedirect(url.toString())
+
+    const url = new URL(window.location.toString())
+    url.pathname = '/logged_in.html'
+    url.search = ''
+    url.hash = ''
+    re.setRedirect(url.toString())
         .open()
 }

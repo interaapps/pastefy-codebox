@@ -4,12 +4,15 @@ import {CustomElement, State} from 'jdomjs/src/decorators.ts'
 
 import { CodeEditor } from 'petrel/index.js'
 import { JavaScriptAutoComplete, DockerfileAutoComplete, HTMLAutoComplete, JSONAutoComplete, JavaAutoComplete, MarkdownAutoComplete, PHPAutoComplete, SQLAutoComplete, YAMLAutoComplete } from 'petrel/autocompletions.js'
+import emmet from 'petrel/src/plugins/emmet.js'
 import hljs from 'highlight.js'
 import LANGUAGE_REPLACEMENTS from './langReplacements.ts'
+import importHelper from "./importHelper.ts";
 const LANGUAGES = hljs.listLanguages()
 
 const AUTOCOMPLETIONS = [
     {language: "javascript", file: JavaScriptAutoComplete},
+    {language: "typescript", file: JavaScriptAutoComplete},
     {language: "dockerfile", file: DockerfileAutoComplete},
     {language: "html", file: HTMLAutoComplete},
     {language: "json", file: JSONAutoComplete},
@@ -26,6 +29,9 @@ export default class CodeEditorPart extends JDOMComponent {
     @State()
     selected = state<any>({})
 
+    @State()
+    files = state<any[]>([])
+
     codeEditor = new CodeEditor(null)
 
     currentLanguage = ''
@@ -33,6 +39,9 @@ export default class CodeEditorPart extends JDOMComponent {
     selectListener = null
 
     timer: number = null
+
+    lastName: string = null
+    deleteEmmetPlugin: any = null
 
     constructor() {
         super({
@@ -47,7 +56,6 @@ export default class CodeEditorPart extends JDOMComponent {
     }
 
     updateEditorLang() {
-        console.log('huh', this.selected.value.name)
         if (!this.selected.value.name || (this.selected.value.name instanceof Hook))
             return;
         let language;
@@ -74,11 +82,18 @@ export default class CodeEditorPart extends JDOMComponent {
                 this.codeEditor.setHighlighter(c => hljs.highlight(language, c).value)
 
                 this.codeEditor.setAutoCompleteHandler(null)
-                for (const autocompletion of AUTOCOMPLETIONS) {
-                    if (autocompletion.language == language || (autocompletion.language == "html" && isHTML)) {
-                        (async () => {
-                            this.codeEditor.setAutoCompleteHandler(new autocompletion.file)
-                        })()
+                console.log({ language })
+
+                if (language === 'xml' && (
+                    this.selected.value?.name.endsWith('.vue')
+                    || this.selected.value?.name.endsWith('.svelte')
+                )) {
+                        this.codeEditor.setAutoCompleteHandler(new JavaScriptAutoComplete())
+                } else {
+                    for (const autocompletion of AUTOCOMPLETIONS) {
+                        if (autocompletion.language == language || (autocompletion.language == "html" && isHTML)) {
+                            this.codeEditor.setAutoCompleteHandler(new autocompletion.file())
+                        }
                     }
                 }
             }
@@ -94,6 +109,46 @@ export default class CodeEditorPart extends JDOMComponent {
         }
     }
 
+    async updateLanguageAutocompletions() {
+        console.log('Setting autocompletions')
+        if (this.codeEditor.autoCompleteHandler instanceof JavaScriptAutoComplete) {
+            this.codeEditor.autoCompleteHandler.importScripts = []
+            this.files.value
+                ?.filter(f => f.name !== this.selected.value.name)
+                ?.filter(f => f.name.endsWith('.js') || f.name.endsWith('.jsx'))
+                ?.forEach(f => {
+                    const fHandler = new JavaScriptAutoComplete({ disableAutoLoad: true })
+                    fHandler.analyseCode(f.contents)
+                    this.codeEditor.autoCompleteHandler.importScripts.push(
+                        {
+                            file: './'+f.name,
+                            analysed: fHandler.analysed
+                        }
+                    )
+                })
+
+            this.files.value
+                ?.filter(f => f.name !== this.selected.value.name)
+                ?.filter(f => f.name.endsWith('.svelte') || f.name.endsWith('.vue'))
+                ?.forEach(f => {
+                    const fHandler = new JavaScriptAutoComplete({ disableAutoLoad: true })
+                    fHandler.analyseCode(f.contents)
+                    this.codeEditor.autoCompleteHandler.importScripts.push(
+                        {
+                            file: './'+f.name,
+                            analysed: {
+                                defaultExport: f.name.replace('.vue', '').replace('.svelte', ''),
+                                exports: []
+                            }
+                        }
+                    )
+                })
+
+            this.codeEditor.autoCompleteHandler.importScripts.push(...importHelper)
+            console.log('ÖÖÖÖÖ', this.codeEditor.autoCompleteHandler.importScripts)
+        }
+    }
+
     dettach() {
         this.selected.removeListener(this.selectListener)
     }
@@ -101,9 +156,25 @@ export default class CodeEditorPart extends JDOMComponent {
     render() {
         const element = document.createElement('div')
         this.codeEditor.parentElement = element
+        emmet(this.codeEditor, {
+            preventer: () => {
+                console.log(this.codeEditor.autoCompleteHandler instanceof HTMLAutoComplete)
+                return !(
+                    this.codeEditor.autoCompleteHandler instanceof HTMLAutoComplete
+                    || this.selected.value?.name?.endsWith('.vue')
+                    || this.selected.value?.name?.endsWith('.svelte')
+                    || this.selected.value?.name?.endsWith('.jsx')
+                    || this.selected.value?.name?.endsWith('.tsx')
+                )
+            }
+        })
 
         this.selectListener = this.selected.addListener(v => {
             this.updateEditorLang()
+            if (this.lastName !== v.name) {
+                this.updateLanguageAutocompletions()
+                this.lastName = v.name
+            }
             if (this.codeEditor.value !== v.contents) {
                 this.codeEditor.setValue(v.contents)
             }
@@ -138,6 +209,7 @@ export default class CodeEditorPart extends JDOMComponent {
         this.codeEditor.setAutoCompleteHandler(new JavaScriptAutoComplete())
         this.codeEditor.create()
         this.updateEditorLang()
+        this.updateLanguageAutocompletions()
 
         return html`${ element }`
     }

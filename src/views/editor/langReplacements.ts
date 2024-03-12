@@ -12,6 +12,7 @@ export default {
     xhtml: 'xml',
     iml: 'xml',
     vue: 'xml',
+    svelte: 'xml',
     yml: 'yaml',
     py: 'python',
     css: 'scss',

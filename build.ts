@@ -6,6 +6,10 @@ import { compile } from 'sass'
 const result = await Bun.build({
     entrypoints: ["./src/main.ts"],
     outdir: "./dist",
+    minify: {
+        whitespace: true,
+        syntax: true,
+    },
 });
 
 // @ts-ignore

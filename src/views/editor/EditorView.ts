@@ -1,17 +1,16 @@
-import {computed, css, html, JDOMComponent, state} from 'jdomjs'
+import { computed, html, JDOMComponent, state } from 'jdomjs'
 
-import {Attribute, Computed, CustomElement, State, Watch} from 'jdomjs/src/decorators.ts'
-import { Awaiting, ForEach } from 'jdomjs/src/template/helper/components.js'
-import {api, router} from "../../main.ts";
+import { CustomElement } from 'jdomjs/src/decorators.ts'
+import { ForEach } from 'jdomjs/src/template/helper/components.js'
+import { api, router } from "../../main.ts";
 import { WebContainer } from '@webcontainer/api';
 import {Terminal} from "@xterm/xterm";
 import CodeEditorPart from "./CodeEditorPart.ts";
-import {login, user} from "../../user.ts";
+import { user } from "../../user.ts";
 import configs from "./configs";
 import Logo from "../../components/Logo.ts";
 import UserProfile from "../../components/UserProfile.ts";
-import TopBar from "../../components/TopBar.ts";
-import {scss} from "../../scss.ts";
+import { scss } from "../../scss.ts";
 import LoadingIndicator from "../../components/LoadingIndicator.ts";
 
 
@@ -32,6 +31,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
     terminalLoading = state(false)
     containerError = state(false)
     savedIndicator = state(false)
+    codeEditorComponent = state<CodeEditorPart>(null)
 
     terminal: Terminal = new Terminal({
         convertEol: true,
@@ -192,10 +192,13 @@ export default class EditorView extends JDOMComponent.unshadowed {
     selectFile(index: number) {
         this.saveCurrent()
         this.selectedTabIndex.value = index
+
         this.selectedFile.value = {
             name: this.files.value[index].name,
             contents: this.files.value[index].contents,
         }
+
+        this.codeEditorComponent.value?.dispatchEvent(new CustomEvent('changed_file', { detail: { file: this.selectedFile.value, files: this.files.value } }))
     }
 
     detach() {
@@ -354,8 +357,10 @@ export default class EditorView extends JDOMComponent.unshadowed {
                         
                         <${CodeEditorPart} 
                                 selected=${this.selectedFile} 
+                                files=${this.files} 
                                 @changed=${() => this.saveCurrent()}
                                 @save_paste=${() => this.savePaste()}
+                                :ref=${this.codeEditorComponent}
                         />
                     </div>
                     <div class=${{'editor-preview': true, fullscreen: this.fullscreen}} :if=${this.previewShown}>

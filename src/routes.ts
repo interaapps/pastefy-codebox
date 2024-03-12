@@ -12,6 +12,6 @@ export default [
   {
     path: "/:paste",
     name: "editor",
-    view: () => html`<${EditorView} test.attr="YOo" />`,
+    view: () => html`<${EditorView} />`,
   },
 ];

@@ -301,6 +301,8 @@ export default class EditorView extends JDOMComponent.unshadowed {
                                                 'ti',
                                                 'file-icon',
                                                 computed(() => {
+                                                    if (!this.files.value[index].name)
+                                                        return 'ti-file'
                                                     if (this.files.value[index].name === '.codebox')
                                                         return 'ti-file-settings'
                                                     else if (this.files.value[index].name === 'tsconfig.json')

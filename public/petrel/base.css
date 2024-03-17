@@ -13,7 +13,7 @@
     margin: 0px;
     line-height: inherit;
     background: transparent;
-    min-height: 100%;
+    /* min-height: 100%; */
     overflow: hidden;
     border: none;
     outline: none;
@@ -24,12 +24,14 @@
     caret-color: #989898;
     overflow-wrap: normal;
     white-space: pre;
-    min-width: 100%;
+    /*min-width: 100%;*/
     padding-left: 0;
     position: absolute;
     top: 0;
     font-size: inherit;
     left: 0px;
+
+    opacity: 0;
 }
 
 .petrel-code-editor textarea::-moz-selection, .petrel-code-editor textarea::selection {
@@ -49,6 +51,69 @@
     pointer-events: none;
     font-family: inherit;
     font-size: inherit;
+    z-index: 3;
+}
+
+
+
+.petrel-code-editor .petrel-code-editor-overlay {
+    position: absolute;
+    pointer-events: none;
+    top: 15px;
+    left: 20px;
+}
+
+.petrel-code-editor .petrel-code-editor-overlay-line-indicator {
+    position: absolute;
+    background: #FFFFFF11;
+    z-index: 1;
+}
+
+.petrel-code-editor .petrel-code-editor-overlay-bracket-indicator {
+    position: absolute;
+    background: #FFFFFF11;
+    border: #FFFFFF22 1px solid;
+    box-sizing: border-box;
+    z-index: 4;
+}
+
+.petrel-code-editor .petrel-code-editor-overlay-cursor {
+    position: absolute;
+    background: #FFFFFF;
+    animation: 1s cursor infinite linear;
+    width: 2px;
+    z-index: 10;
+}
+
+.petrel-code-editor .petrel-code-editor-selection {
+    position: absolute;
+    background: #3B74F133;
+    z-index: 2;
+}
+.petrel-code-editor .petrel-code-editor-selection-single {
+    border-radius: 4px;
+}
+.petrel-code-editor .petrel-code-editor-selection-first {
+    border-radius: 4px 0 0 0;
+}
+.petrel-code-editor .petrel-code-editor-selection-last {
+    border-radius: 0 0 4px 0;
+}
+
+@keyframes cursor {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+    }
+    51% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 .petrel-code-editor .petrel-code-editor-line-numbering {
@@ -73,7 +138,7 @@
 
 
 .petrel-code-editor .petrel-code-editor-line-numbering span div {
-    height: 22px;
+    height: 23px;
     width: 100%;
     left: 0px;
     position: absolute;
@@ -90,12 +155,14 @@
     position: absolute;
     left: 92px;
     background: #FFF;
+    z-index: 11;
 }
 
 
 .petrel-code-editor .petrel-code-editor-autocompletion a {
     cursor: pointer;
     display: block;
+    font-size: 12px;
 }
 
 .petrel-code-editor .petrel-code-editor-autocompletion a.selected {

@@ -20,6 +20,6 @@ api.promiseInterceptor = r => r.json()
 initUser()
 
 html`<${App} router=${router} />`
-    .appendTo(document);
+    .appendTo(document)
 
 router.init();

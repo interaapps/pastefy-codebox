@@ -1,4 +1,5 @@
 @import url('./base.css');
+@import url(https://fonts.intera.dev/_/dm+mono);
 
 .petrel-code-editor {
     background: #212531;
@@ -9,6 +10,7 @@
     resize: vertical;
     min-height: 140px;
     border-radius: 10px;
+    font-family: 'DM Mono';
 }
 
 .petrel-code-editor::-webkit-resizer {
@@ -59,11 +61,32 @@
     overflow: auto;
 }
 .petrel-code-editor .petrel-code-editor-autocompletion a {
-    padding: 4px 6px;
-    margin: 5px;
+    padding: 3px 5px;
+    margin: 0 5px;
     border-radius: 6px;
-    font-size: 16px;
 }
 .petrel-code-editor .petrel-code-editor-autocompletion a:hover {
     background: #FFFFFF21;
+}
+
+
+.petrel-code-editor .petrel-code-editor-overlay-bracket-indicator {
+    background: #FFFFFF11;
+    border-color: #FFFFFF22;
+}
+
+.petrel-code-editor .petrel-code-editor-line-numbering span div {
+    background: #FFFFFF11;
+}
+
+.petrel-code-editor .petrel-code-editor-overlay-line-indicator {
+    background: #FFFFFF11;
+}
+
+.petrel-code-editor .petrel-code-editor-overlay-cursor {
+    background: #FFFFFF;
+}
+
+.petrel-code-editor .petrel-code-editor-selection {
+    background: #3B74F166;
 }

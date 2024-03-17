@@ -47,9 +47,16 @@ export default class CodeEditorPart extends JDOMComponent {
         super({
             shadowed: false
         });
+
+
+        const userAgent = window.navigator.userAgent.toLowerCase()
+        if ((userAgent.includes('iphone') || userAgent.includes('ipad')) && userAgent.includes('safari')) {
+            this.codeEditor.textAreaElement.style.opacity = '1'
+        }
     }
 
     detach() {
+        this.selected.removeListener(this.selectListener)
         if (this.timer !== null) {
             clearInterval(this.timer)
         }
@@ -145,12 +152,7 @@ export default class CodeEditorPart extends JDOMComponent {
                 })
 
             this.codeEditor.autoCompleteHandler.importScripts.push(...importHelper)
-            console.log('ÖÖÖÖÖ', this.codeEditor.autoCompleteHandler.importScripts)
         }
-    }
-
-    dettach() {
-        this.selected.removeListener(this.selectListener)
     }
 
     render() {

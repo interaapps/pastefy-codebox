@@ -443,6 +443,7 @@ export default class EditorView extends JDOMComponent.unshadowed {
               grid-template-columns: auto 25%;
               grid-gap: 10px;
               padding: 0 10px 10px;
+              overflow: hidden;
 
               .editor-code-editor-area {
                 color: #FFF;

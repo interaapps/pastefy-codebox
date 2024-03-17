@@ -2,8 +2,12 @@
     overflow-wrap: normal;
     overflow-x: auto;
     position: relative;
+    font-size: 16px;
     font-family: monospace;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
+
 .petrel-code-editor * {
     font-family: inherit;
     line-height: inherit;
